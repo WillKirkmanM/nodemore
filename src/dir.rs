@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::Path;
 
 use crate::time::{
     human_to_unix_time,
@@ -7,15 +8,21 @@ use crate::time::{
 
 pub fn should_clean_dir(dir: &str) -> bool {
 
-    let dir = fs::read_dir(dir).unwrap();
-    for file in dir {
-        let file_path = file.unwrap().path();
-        let should = should_clean(file_path.to_str().unwrap()).unwrap();
-        if should == false {
-            return false
+    let node_modules_exists = Path::new(&(dir.to_owned() + "/" + "node_modules")).exists();
+
+    if node_modules_exists {
+        let dir = fs::read_dir(dir).unwrap();
+        for file in dir {
+            let file_path = file.unwrap().path();
+            let should = should_clean(file_path.to_str().unwrap()).unwrap();
+            if should == false {
+                return false
+            }
         }
+        true
+    } else {
+        false
     }
-    true
 }
 
 pub fn should_clean(path: &str) -> Result<bool, std::io::Error> {
