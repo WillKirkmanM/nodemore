@@ -14,7 +14,9 @@ pub fn should_clean_dir(dir: &str) -> bool {
         let dir = fs::read_dir(dir).unwrap();
         for file in dir {
             let file_path = file.unwrap().path();
-            let should = should_clean(file_path.to_str().unwrap()).unwrap();
+            let file_path_str = file_path.to_str().unwrap();
+
+            let should = should_clean(file_path_str).unwrap();
             if should == false {
                 return false
             }
