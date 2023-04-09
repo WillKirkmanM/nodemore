@@ -2,8 +2,12 @@ mod time;
 mod config;
 mod dir;
 
-use dir::should_clean_dir;
+use crate::dir::should_clean_dir;
 
 fn main() {
-    dbg!(should_clean_dir("farm"));
+    if should_clean_dir("Projects") {
+        println!("damn")
+    } else {
+        println!("cool u good")
+    };
 }
