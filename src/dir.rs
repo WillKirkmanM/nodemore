@@ -2,11 +2,13 @@ use std::fs;
 use std::path::Path;
 use std::io::stdin;
 
-use crate::{time::{
+use crate::time::{
     human_to_unix_time,
     get_unix_last_modified
-}};
+};
 use crate::args::NodemoreArgs;
+use crate::config::read_config_file;
+
 
 use colored::Colorize;
 use clap::Parser;
@@ -20,6 +22,9 @@ pub fn contains_only_folders(dir: &str) -> bool {
         }
     }
     true
+}
+
+pub fn amount_to_clean() -> u32 {
 }
 
 pub fn check_dir(dir: &str) {
@@ -38,27 +43,33 @@ pub fn check_dir(dir: &str) {
         }
         if is_dir {
             if Path::new(&(dir_path.to_str().unwrap().to_string() + "/" + "package.json")).try_exists().unwrap() {
-                // println!("{:?} is a node project", dir_path);
                 let should = should_clean_dir_no_checks(dir_path_str);
                 let args = NodemoreArgs::parse();
                 if should {
                     if args.prompt {
-                        println!("Would you like to {} {}?", "clean".red(), dir_name.bright_green());
+                        if args.verbosity >= 1 {
+                            println!("Would you like to {} {}? ({})", "clean".red(), dir_name.bright_green(), dir_path_str.bright_green());
+                        } else {
+                            println!("Would you like to {} {}?", "clean".red(), dir_name.bright_green());
+                        }
 
                         let mut input = String::new();
                         stdin().read_line(&mut input).unwrap();
                         input = input.trim().to_string();
 
-                        dbg!(&input);
                         if input == "Y" || input == "y" {
                             todo!("Delete Node Modules")
                         } else {
                             continue
                         }
                     } else {
-                        println!("[{}]: {} is gone", "-".red(), dir_name.bright_green())
+                        if args.verbosity >= 1 {
+                            println!("[{}]: {} ({})", "-".red(), dir_name.bright_green(), dir_path_str.bright_green())
+                        } else {
+                            println!("[{}]: {}", "-".red(), dir_name.bright_green())
+                        }
                     }
-                } 
+                }
             } 
         }
     }
@@ -126,8 +137,6 @@ pub fn should_clean_dir_no_checks(dir: &str) -> bool {
 }
 
 pub fn should_clean_file(path: &str) -> Result<bool, std::io::Error> {
-    use super::config::read_config_file;
-
     let config = read_config_file().unwrap();
     match get_unix_last_modified(path){
         Ok(time) => {
