@@ -13,10 +13,19 @@ use colored::Colorize;
 use clap::Parser;
 
 pub fn init() {
-    let config = read_config_file().unwrap();
-    println!("NodeJS Projects Not Accessed in the last {}:", (config.cleaning.time).bright_green());
-    let list = check_dir("../../Projects");
-    ask_to_clean(list)
+    let args = NodemoreArgs::parse();
+    match read_config_file() {
+        Ok(config) => {
+            println!("NodeJS Projects Not Accessed in the last {}:", (config.cleaning.time).bright_green());
+            let list = check_dir(&args.path);
+            ask_to_clean(list)
+        },
+        Err(_) => {
+            println!("NodeJS Projects Not Accessed in the last {}:", (args.time).bright_green());
+            let list = check_dir(&args.path);
+            ask_to_clean(list);
+        }
+    }
 }
 
 pub fn contains_only_folders(dir: &str) -> bool {
@@ -31,7 +40,24 @@ pub fn contains_only_folders(dir: &str) -> bool {
 }
 
 pub fn ask_to_clean(list_vec: Vec<String>) {
-    println!("Do you want to {} these ({}) Projects? (Y/n)", "clean".red(), list_vec.len().to_string().bright_green());
+    let args = NodemoreArgs::parse();
+
+    if args.prompt {
+        for project in list_vec.iter() {
+            if let Some(index) = project.rfind('/') {
+                let project_name = &project[index + 1..];
+
+            if args.verbosity >= 1 {
+                    println!("[{}]: {} ({})", "-".red(), project_name.bright_green(), project.bright_green());
+                } else {
+                    println!("[{}]: {}", "-".red(), project_name.bright_green());
+                }
+            }
+        }
+        println!("Do you want to {} these ({}) Projects? (Y/n)", "clean".red(), list_vec.len().to_string().bright_green());
+    } else {
+        println!("Do you want to {} these ({}) Projects? (Y/n)", "clean".red(), list_vec.len().to_string().bright_green());
+    }
 
     let mut answer = String::new();
     stdin().read_line(&mut answer).unwrap();
@@ -97,9 +123,9 @@ pub fn check_dir(dir: &str) -> Vec<String> {
                 if should {
                     if args.prompt {
                         if args.verbosity >= 1 {
-                            println!("Would you like to {} {}? ({})", "clean".red(), dir_name.bright_green(), dir_path_str.bright_green());
+                            println!("Would you like to {} {}? (Y/n) ({})", "clean".red(), dir_name.bright_green(), dir_path_str.bright_green());
                         } else {
-                            println!("Would you like to {} {}?", "clean".red(), dir_name.bright_green());
+                            println!("Would you like to {} {}? (Y/n)", "clean".red(), dir_name.bright_green());
                         }
 
                         let mut input = String::new();
@@ -107,7 +133,7 @@ pub fn check_dir(dir: &str) -> Vec<String> {
                         input = input.trim().to_string();
 
                         if input == "Y" || input == "y" {
-                            todo!("Delete Node Modules")
+                            dir_vec.push(dir_path_str.to_string());
                         } else {
                             continue
                         }
@@ -131,7 +157,7 @@ pub fn should_clean_dir_with_checks(dir: &str) -> bool {
     let node_modules_exists = Path::new(&(dir.to_owned() + "/" + "node_modules")).exists();
 
     if node_modules_exists {
-        should_clean_dir(dir) // <- Bool
+        should_clean_dir(dir)
     } else {
         false
     }
@@ -164,18 +190,37 @@ pub fn should_clean_dir(dir: &str) -> bool {
 }
 
 pub fn should_clean_file(path: &str) -> Result<bool, std::io::Error> {
-    let config = read_config_file().unwrap();
-    match get_unix_last_modified(path){
-        Ok(time) => {
-            if time > human_to_unix_time(config.cleaning.time) {
-                Ok(false)
-            } else {
-                Ok(true)
+    let args = NodemoreArgs::parse();
+
+    match read_config_file() {
+        Ok(config) => {
+            match get_unix_last_modified(path){
+                Ok(time) => {
+                    if time > human_to_unix_time(config.cleaning.time) {
+                        Ok(false)
+                    } else {
+                        Ok(true)
+                    }
+                },
+                Err(error) => {
+                    Err(error)
+                }
             }
         },
-        Err(error) => {
-            Err(error)
+        Err(_) => {
+            match get_unix_last_modified(path){
+                Ok(time) => {
+                    if time > human_to_unix_time(args.time) {
+                        Ok(false)
+                    } else {
+                        Ok(true)
+                    }
+                },
+                Err(error) => {
+                    Err(error)
+                }
+            }
         }
-
     }
+    
 }
