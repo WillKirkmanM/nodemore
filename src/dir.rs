@@ -9,9 +9,15 @@ use crate::time::{
 use crate::args::NodemoreArgs;
 use crate::config::read_config_file;
 
-
 use colored::Colorize;
 use clap::Parser;
+
+pub fn init() {
+    let config = read_config_file().unwrap();
+    println!("NodeJS Projects Not Accessed in the last {}:", (config.cleaning.time).bright_green());
+    let list = check_dir("../../Projects");
+    ask_to_clean(list)
+}
 
 pub fn contains_only_folders(dir: &str) -> bool {
     let contents = fs::read_dir(dir).unwrap();
@@ -24,11 +30,52 @@ pub fn contains_only_folders(dir: &str) -> bool {
     true
 }
 
-pub fn amount_to_clean() -> u32 {
-    32
+pub fn ask_to_clean(list_vec: Vec<String>) {
+    println!("Do you want to {} these ({}) Projects? (Y/n)", "clean".red(), list_vec.len().to_string().bright_green());
+
+    let mut answer = String::new();
+    stdin().read_line(&mut answer).unwrap();
+    answer = answer.trim().to_string();
+
+    if answer == "Y" || answer == "y" {
+        for (mut value, project) in list_vec.iter().enumerate() {
+            value = value + 1;
+            delete_node_modules(project, value as u32);
+        }
+    } else {
+        println!("Bye! 👋")
+    }
 }
 
-pub fn check_dir(dir: &str) {
+pub fn delete_node_modules(dir: &str, value: u32) {
+    let node_modules_path = dir.to_string() + "/node_modules/";
+    let args = NodemoreArgs::parse();
+
+    if let Some(index) = dir.rfind('/') {
+        let project_name = &dir[index + 1..];
+
+        match fs::remove_dir_all(&node_modules_path) {
+            Ok(_) => {
+                if args.verbosity >= 1 {
+                    println!("[{}]: [{}] {}! {} ({})", "Cleaned".bright_green(), "-".red(), value.to_string().bright_green(), project_name.bright_green(), dir.bright_green())
+                } else {
+                    println!("[{}]: {}! {}", "Cleaned".bright_green(), "-".red(), project_name.bright_green())
+                }
+            },
+            Err(err) => {
+                if args.verbosity >= 1 {
+                    eprintln!("There was an {} {}{} ({})\n{}", "error deleting".red(), project_name.bright_green(), "/node_modules/".bright_green(), node_modules_path.bright_green(), err)
+                } else {
+                    eprintln!("There was an {} {}{}\n{}", "error deleting".red(), project_name.bright_green(), "/node_modules/".bright_green(), err)
+                }
+            }
+        }   
+    }
+    
+}
+
+pub fn check_dir(dir: &str) -> Vec<String> {
+    let mut dir_vec: Vec<String> = vec![];
     let dir_list = fs::read_dir(dir).unwrap();
 
     for directory in dir_list {
@@ -40,10 +87,11 @@ pub fn check_dir(dir: &str) {
 
         let is_dir = fs::metadata(dir_path).unwrap().is_dir();
         if is_dir && contains_only_folders(dir_path_str) {
-            check_dir(dir_path_str)
+            dir_vec.append(&mut check_dir(dir_path_str))
         }
         if is_dir {
-            if Path::new(&(dir_path.to_str().unwrap().to_string() + "/" + "package.json")).try_exists().unwrap() {
+            let package_json_exists = Path::new(&(dir_path.to_str().unwrap().to_string() + "/" + "package.json")).try_exists().unwrap();
+            if package_json_exists {
                 let should = should_clean_dir(dir_path_str);
                 let args = NodemoreArgs::parse();
                 if should {
@@ -64,16 +112,18 @@ pub fn check_dir(dir: &str) {
                             continue
                         }
                     } else {
+                        dir_vec.push(dir_path_str.to_string());
                         if args.verbosity >= 1 {
-                            println!("[{}]: {} ({})", "-".red(), dir_name.bright_green(), dir_path_str.bright_green())
+                            println!("[{}]: {} ({})", "-".red(), dir_name.bright_green(), dir_path_str.bright_green());
                         } else {
-                            println!("[{}]: {}", "-".red(), dir_name.bright_green())
+                            println!("[{}]: {}", "-".red(), dir_name.bright_green());
                         }
                     }
                 }
             } 
         }
     }
+    dir_vec
 } 
 
 
