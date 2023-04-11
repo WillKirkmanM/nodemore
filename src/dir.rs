@@ -25,6 +25,7 @@ pub fn contains_only_folders(dir: &str) -> bool {
 }
 
 pub fn amount_to_clean() -> u32 {
+    32
 }
 
 pub fn check_dir(dir: &str) {
@@ -43,7 +44,7 @@ pub fn check_dir(dir: &str) {
         }
         if is_dir {
             if Path::new(&(dir_path.to_str().unwrap().to_string() + "/" + "package.json")).try_exists().unwrap() {
-                let should = should_clean_dir_no_checks(dir_path_str);
+                let should = should_clean_dir(dir_path_str);
                 let args = NodemoreArgs::parse();
                 if should {
                     if args.prompt {
@@ -76,41 +77,17 @@ pub fn check_dir(dir: &str) {
 } 
 
 
-pub fn should_clean_dir(dir: &str) -> bool {
+pub fn should_clean_dir_with_checks(dir: &str) -> bool {
     let node_modules_exists = Path::new(&(dir.to_owned() + "/" + "node_modules")).exists();
 
     if node_modules_exists {
-        let dir_list = fs::read_dir(dir).unwrap();
-        for file in dir_list {
-            let file_name = file.as_ref().unwrap().file_name();
-            let file_path = file.unwrap().path();
-
-            let is_dir = fs::metadata(&file_path).unwrap().is_dir();
-            if is_dir && file_name == "node_modules" {
-                continue;
-            } else if is_dir {
-                let should = should_clean_dir(file_path.clone().to_str().unwrap());
-                if should {
-                    println!("{:?} Should be deleted", file_name)
-                }
-                continue;
-            } else {
-                // println!("File {:?}", &file_path);
-                let file_path_str = file_path.to_str().unwrap();
-
-                let should = should_clean_file(file_path_str).unwrap();
-                if should == false {
-                    return false
-                }
-            };
-        }
-        true
+        should_clean_dir(dir) // <- Bool
     } else {
         false
     }
 }
 
-pub fn should_clean_dir_no_checks(dir: &str) -> bool {
+pub fn should_clean_dir(dir: &str) -> bool {
         let dir_list = fs::read_dir(dir).unwrap();
         for file in dir_list {
             let file_name = file.as_ref().unwrap().file_name();
@@ -118,7 +95,7 @@ pub fn should_clean_dir_no_checks(dir: &str) -> bool {
 
             let is_dir = fs::metadata(&file_path).unwrap().is_dir();
             if is_dir {
-                let should = should_clean_dir(file_path.clone().to_str().unwrap());
+                let should = should_clean_dir_with_checks(file_path.clone().to_str().unwrap());
                 if should {
                     println!("{:?} Should be deleted", file_name)
                 }
