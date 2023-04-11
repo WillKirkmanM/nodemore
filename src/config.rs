@@ -13,7 +13,7 @@ pub struct CleaningConfig {
 }
 
 pub fn read_config_file() -> Result<Config, String> {
-    let mut file = File::open("config.yml").map_err(|_| "We cannot read the config.yml! Does it exist?".to_string())?;
+    let mut file = File::open("nodemore.yml").map_err(|_| "We cannot read the nodemore.yml! Does it exist?".to_string())?;
     let mut contents = String::new();
     file.read_to_string(&mut contents).map_err(|e| e.to_string())?;
 
