@@ -10,6 +10,7 @@ pub struct Config {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CleaningConfig {
     pub time: String,
+    pub path: String,
 }
 
 pub fn read_config_file() -> Result<Config, String> {
