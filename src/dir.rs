@@ -1,9 +1,13 @@
 use std::fs;
 use std::io::stdin;
 use std::path::Path;
+use std::process::exit;
 
-use crate::args::NodemoreArgs;
-use crate::config::read_config_file;
+use crate::args::{
+    NodemoreArgs,
+    get_cleaning_time,
+    get_cleaning_path
+};
 use crate::time::{get_unix_last_modified, human_to_unix_time};
 
 use clap::Parser;
@@ -11,25 +15,13 @@ use colored::Colorize;
 use human_bytes::human_bytes;
 
 pub fn init() {
-    let args = NodemoreArgs::parse();
-    match read_config_file() {
-        Ok(config) => {
-            println!(
-                "NodeJS Projects Not Accessed in the last {}:",
-                (config.cleaning.time).bright_green()
-            );
-            let list = check_dir(&args.path);
-            ask_to_clean(list)
-        }
-        Err(_) => {
-            println!(
-                "NodeJS Projects Not Accessed in the last {}:",
-                (args.time).bright_green()
-            );
-            let list = check_dir(&args.path);
-            ask_to_clean(list);
-        }
-    }
+    let cleaning_time = get_cleaning_time();
+    let cleaning_path = get_cleaning_path();
+
+    let list = projects_to_clean(&cleaning_path);
+    println!("NodeJS Projects Not Accessed in the last {}:", (cleaning_time).bright_green());
+    
+    ask_to_clean(list);
 }
 
 trait FormatSize: std::fmt::Display {
@@ -103,6 +95,15 @@ pub fn ask_to_clean(list_vec: Vec<String>) {
                         size.format_size(),
                         project.bright_green()
                     );
+                } else if args.show_size {
+                    let size = get_directory_size(project);
+
+                    println!(
+                        "[{}]: {} (~{})",
+                        "-".red(),
+                        project_name.bright_green(),
+                        size.format_size(),
+                    );
                 } else {
                     println!(
                         "[{}]: {}",
@@ -113,13 +114,13 @@ pub fn ask_to_clean(list_vec: Vec<String>) {
             }
         }
         println!(
-            "Do you want to {} these ({}) Projects? Saving (Y/n)",
+            "Do you want to {} these ({}) Project(s)? Saving (Y/n)",
             "clean".red(),
             list_vec.len().to_string().bright_green(),
         );
     } else {
         println!(
-            "Do you want to {} these ({}) Projects? (Y/n)",
+            "Do you want to {} these ({}) Project(s)? (Y/n)",
             "clean".red(),
             list_vec.len().to_string().bright_green(),
         );
@@ -135,7 +136,7 @@ pub fn ask_to_clean(list_vec: Vec<String>) {
             delete_node_modules(project, value as u32);
         }
         println!(
-            "Done! Cleaned ({}) Projects from your Hard Disk!",
+            "Done! Cleaned ({}) Project(s) from your Hard Disk!",
             list_vec.len().to_string().bright_green(),
         )
     } else {
@@ -194,7 +195,7 @@ pub fn delete_node_modules(dir: &str, value: u32) {
     }
 }
 
-pub fn check_dir(dir: &str) -> Vec<String> {
+pub fn projects_to_clean(dir: &str) -> Vec<String> {
     let mut dir_vec: Vec<String> = vec![];
     let dir_list = fs::read_dir(dir).unwrap();
 
@@ -207,7 +208,7 @@ pub fn check_dir(dir: &str) -> Vec<String> {
 
         let is_dir = fs::metadata(dir_path).unwrap().is_dir();
         if is_dir && contains_only_folders(dir_path_str) {
-            dir_vec.append(&mut check_dir(dir_path_str))
+            dir_vec.append(&mut projects_to_clean(dir_path_str))
         }
         if is_dir {
             let package_json_exists =
@@ -256,7 +257,14 @@ pub fn check_dir(dir: &str) -> Vec<String> {
                                 size.format_size(),
                                 dir_path_str.bright_green()
                             );
-                        } else if args.verbosity >= 1{
+                        } else if args.verbosity >= 1 {
+                            println!(
+                                "[{}]: {} ({})",
+                                "-".red(),
+                                dir_name.bright_green(),
+                                dir_path_str.bright_green(),
+                            );
+                        } else if args.show_size {
                             let size = get_directory_size(dir_path.to_str().unwrap());
                             println!(
                                 "[{}]: {} (~{})",
@@ -303,7 +311,6 @@ pub fn should_clean_dir(dir: &str) -> bool {
             }
             continue;
         } else {
-            // println!("File {:?}", &file_path);
             let file_path_str = file_path.to_str().unwrap();
 
             let should = should_clean_file(file_path_str).unwrap();
@@ -315,29 +322,17 @@ pub fn should_clean_dir(dir: &str) -> bool {
     true
 }
 
-pub fn should_clean_file(path: &str) -> Result<bool, std::io::Error> {
-    let args = NodemoreArgs::parse();
+pub fn should_clean_file(path_to_file: &str) -> Result<bool, std::io::Error> {
+    let cleaning_time = get_cleaning_time();
 
-    match read_config_file() {
-        Ok(config) => match get_unix_last_modified(path) {
-            Ok(time) => {
-                if time > human_to_unix_time(config.cleaning.time) {
-                    Ok(false)
-                } else {
-                    Ok(true)
-                }
+    match get_unix_last_modified(path_to_file) {
+        Ok(time) => {
+            if time > human_to_unix_time(cleaning_time) {
+                Ok(false)
+            } else {
+                Ok(true)
             }
-            Err(error) => Err(error),
-        },
-        Err(_) => match get_unix_last_modified(path) {
-            Ok(time) => {
-                if time > human_to_unix_time(args.time) {
-                    Ok(false)
-                } else {
-                    Ok(true)
-                }
-            }
-            Err(error) => Err(error),
-        },
+        }
+        Err(error) => Err(error),
     }
 }
