@@ -1,3 +1,4 @@
+use std::fmt::format;
 use std::fs;
 use std::io::stdin;
 use std::path::Path;
@@ -155,43 +156,40 @@ pub fn delete_node_modules(dir: &str, value: u32) {
 
     match fs::remove_dir_all(&node_modules_path) {
         Ok(_) => {
-            if args.verbosity >= 1 {
-                println!(
-                    "[{}]: [{}] {}! {} ({})",
-                    "Cleaned".bright_green(),
-                    "-".red(),
-                    value.to_string().bright_green(),
-                    project_name.bright_green(),
-                    dir.bright_green()
-                )
-            } else {
-                println!(
-                    "[{}]: {}! {}",
-                    "Cleaned".bright_green(),
-                    "-".red(),
-                    project_name.bright_green()
-                )
+            let mut message = 
+                format!("[{}]:({}) {} {}!",
+                            "-".red(),
+                            value.to_string().bright_green(),
+                            "Cleaned".bright_green(),
+                            project_name.bright_green(),
+                        );
+
+            if args.show_size {
+                let dir_size = get_directory_size(dir).format_size();
+                message = message + &format!(" (~{})", dir_size).to_string()
             }
+
+            if args.verbosity >= 2  {
+                message = message + &format!(" ({})", dir).to_string()
+            }
+            
+            println!("{}", message)
         }
         Err(err) => {
-            if args.verbosity >= 1 {
-                eprintln!(
-                    "There was an {} {}{} ({})\n{}",
-                    "error deleting".red(),
-                    project_name.bright_green(),
-                    "/node_modules/".bright_green(),
-                    node_modules_path.bright_green(),
-                    err
-                )
-            } else {
-                eprintln!(
-                    "There was an {} {}{}\n{}",
-                    "error deleting".red(),
-                    project_name.bright_green(),
-                    "/node_modules/".bright_green(),
-                    err
-                )
+            let mut message = 
+                format!("There was an {} {}{}",
+                            "error deleting".red(),
+                            project_name.bright_green(),
+                            "/node_modules/".bright_green(),
+                        );
+
+            if args.verbosity >= 2 {
+                message = message + &format!(" ({})", dir).to_owned()
             }
+
+            message = message + &format!("\n{}", err).to_string();
+
+            println!("{}", message)
         }
     }
 }
