@@ -146,8 +146,8 @@ pub fn delete_node_modules(dir: &str, value: u32) {
                     );
 
             if args.show_size {
-                let dir_size = get_directory_size(dir).format_size();
-                message = message + " " + &format!("(~{})", dir_size).to_string()
+                let dir_size = get_directory_size(dir).format_size().bright_green();
+                message = message + " " + &format!("(Now ~{})", dir_size).to_string()
             }
 
             if args.verbosity >= 1  {
@@ -196,7 +196,7 @@ pub fn projects_to_clean(dir: &str) -> Vec<String> {
                     .try_exists()
                     .unwrap();
             if package_json_exists {
-                let should = should_clean_dir(dir_path_str);
+                let should = should_clean_dir_with_checks(dir_path_str);
                 let args = NodemoreArgs::parse();
 
                 if should {
