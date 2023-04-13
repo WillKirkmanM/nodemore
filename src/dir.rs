@@ -148,48 +148,49 @@ pub fn delete_node_modules(dir: &str, value: u32) {
     let node_modules_path = dir.to_string() + "/node_modules/";
     let args = NodemoreArgs::parse();
 
+    let mut project_name = "";
     if let Some(index) = dir.rfind('/') {
-        let project_name = &dir[index + 1..];
+        project_name = &dir[index + 1..];
+    }
 
-        match fs::remove_dir_all(&node_modules_path) {
-            Ok(_) => {
-                if args.verbosity >= 1 {
-                    println!(
-                        "[{}]: [{}] {}! {} ({})",
-                        "Cleaned".bright_green(),
-                        "-".red(),
-                        value.to_string().bright_green(),
-                        project_name.bright_green(),
-                        dir.bright_green()
-                    )
-                } else {
-                    println!(
-                        "[{}]: {}! {}",
-                        "Cleaned".bright_green(),
-                        "-".red(),
-                        project_name.bright_green()
-                    )
-                }
+    match fs::remove_dir_all(&node_modules_path) {
+        Ok(_) => {
+            if args.verbosity >= 1 {
+                println!(
+                    "[{}]: [{}] {}! {} ({})",
+                    "Cleaned".bright_green(),
+                    "-".red(),
+                    value.to_string().bright_green(),
+                    project_name.bright_green(),
+                    dir.bright_green()
+                )
+            } else {
+                println!(
+                    "[{}]: {}! {}",
+                    "Cleaned".bright_green(),
+                    "-".red(),
+                    project_name.bright_green()
+                )
             }
-            Err(err) => {
-                if args.verbosity >= 1 {
-                    eprintln!(
-                        "There was an {} {}{} ({})\n{}",
-                        "error deleting".red(),
-                        project_name.bright_green(),
-                        "/node_modules/".bright_green(),
-                        node_modules_path.bright_green(),
-                        err
-                    )
-                } else {
-                    eprintln!(
-                        "There was an {} {}{}\n{}",
-                        "error deleting".red(),
-                        project_name.bright_green(),
-                        "/node_modules/".bright_green(),
-                        err
-                    )
-                }
+        }
+        Err(err) => {
+            if args.verbosity >= 1 {
+                eprintln!(
+                    "There was an {} {}{} ({})\n{}",
+                    "error deleting".red(),
+                    project_name.bright_green(),
+                    "/node_modules/".bright_green(),
+                    node_modules_path.bright_green(),
+                    err
+                )
+            } else {
+                eprintln!(
+                    "There was an {} {}{}\n{}",
+                    "error deleting".red(),
+                    project_name.bright_green(),
+                    "/node_modules/".bright_green(),
+                    err
+                )
             }
         }
     }
