@@ -1,6 +1,7 @@
 use std::fs;
 use std::io::stdin;
 use std::path::Path;
+use std::process::exit;
 
 use crate::args::{
     NodemoreArgs,
@@ -18,7 +19,12 @@ pub fn init() {
     let cleaning_path = get_cleaning_path();
 
     let list = projects_to_clean(&cleaning_path);
-    println!("NodeJS Projects Not Accessed in the last {}:", (cleaning_time).bright_green());
+    if list.len() == 0 {
+        println!("There are {} Projects Not Accessed in the last {} Good Job! 😁", "0".bright_green(), cleaning_time.bright_green());
+        exit(0)
+    }
+        
+    println!("NodeJS Projects Not Accessed in the last {}:", cleaning_time.bright_green());
     
     ask_to_clean(list);
 }
