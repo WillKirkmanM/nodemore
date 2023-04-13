@@ -1,2 +1,3 @@
 cleaning:
   time: "1 day"
+  path: "."
