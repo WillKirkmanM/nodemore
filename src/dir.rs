@@ -1,8 +1,6 @@
-use std::fmt::format;
 use std::fs;
 use std::io::stdin;
 use std::path::Path;
-use std::process::exit;
 
 use crate::args::{
     NodemoreArgs,
@@ -82,50 +80,33 @@ pub fn ask_to_clean(list_vec: Vec<String>) {
 
     if args.prompt {
         for project in list_vec.iter() {
-
+            let mut project_name = "";
             if let Some(index) = project.rfind('/') {
-                let project_name = &project[index + 1..];
-
-                if args.verbosity >= 1 {
-                    let size = get_directory_size(project);
-
-                    println!(
-                        "[{}]: {} (~{}) ({})",
-                        "-".red(),
-                        project_name.bright_green(),
-                        size.format_size(),
-                        project.bright_green()
-                    );
-                } else if args.show_size {
-                    let size = get_directory_size(project);
-
-                    println!(
-                        "[{}]: {} (~{})",
-                        "-".red(),
-                        project_name.bright_green(),
-                        size.format_size(),
-                    );
-                } else {
-                    println!(
-                        "[{}]: {}",
-                        "-".red(),
-                        project_name.bright_green(),
-                    );
-                }
+                project_name = &project[index + 1..];
             }
+
+            let mut message = 
+                format!("[{}]: {}",
+                    "-".red(),
+                    project_name.bright_green(),
+                );
+
+            if args.show_size {
+                let size = get_directory_size(project).format_size();
+                message = message + " " + &format!("(~{})", size).to_string()
+            }
+            if args.verbosity >= 1 {
+                message = message + " " + &format!("({})", project.bright_green()).to_string()
+            }
+
+            println!("{}", message)
         }
-        println!(
-            "Do you want to {} these ({}) Project(s)? Saving (Y/n)",
-            "clean".red(),
-            list_vec.len().to_string().bright_green(),
-        );
-    } else {
-        println!(
-            "Do you want to {} these ({}) Project(s)? (Y/n)",
-            "clean".red(),
-            list_vec.len().to_string().bright_green(),
-        );
-    }
+    } 
+    println!(
+        "Do you want to {} these ({}) Project(s)? (Y/n)",
+        "clean".red(),
+        list_vec.len().to_string().bright_green(),
+    );
 
     let mut answer = String::new();
     stdin().read_line(&mut answer).unwrap();
@@ -158,18 +139,18 @@ pub fn delete_node_modules(dir: &str, value: u32) {
         Ok(_) => {
             let mut message = 
                 format!("[{}]:({}) {} {}!",
-                            "-".red(),
-                            value.to_string().bright_green(),
-                            "Cleaned".bright_green(),
-                            project_name.bright_green(),
-                        );
+                        "-".red(),
+                        value.to_string().bright_green(),
+                        "Cleaned".bright_green(),
+                        project_name.bright_green(),
+                    );
 
             if args.show_size {
                 let dir_size = get_directory_size(dir).format_size();
                 message = message + &format!(" (~{})", dir_size).to_string()
             }
 
-            if args.verbosity >= 2  {
+            if args.verbosity >= 1  {
                 message = message + &format!(" ({})", dir).to_string()
             }
             
@@ -178,12 +159,12 @@ pub fn delete_node_modules(dir: &str, value: u32) {
         Err(err) => {
             let mut message = 
                 format!("There was an {} {}{}",
-                            "error deleting".red(),
-                            project_name.bright_green(),
-                            "/node_modules/".bright_green(),
-                        );
+                        "error deleting".red(),
+                        project_name.bright_green(),
+                        "/node_modules/".bright_green(),
+                    );
 
-            if args.verbosity >= 2 {
+            if args.verbosity >= 1 {
                 message = message + &format!(" ({})", dir).to_owned()
             }
 
@@ -220,20 +201,17 @@ pub fn projects_to_clean(dir: &str) -> Vec<String> {
 
                 if should {
                     if args.prompt {
+                        let mut message = 
+                            format!("would you like to {} {}? (Y/n))",
+                                    "clean".red(),
+                                    dir_name.bright_green()
+                            );
+
                         if args.verbosity >= 1 {
-                            println!(
-                                "Would you like to {} {}? (Y/n) ({})",
-                                "clean".red(),
-                                dir_name.bright_green(),
-                                dir_path_str.bright_green()
-                            );
-                        } else {
-                            println!(
-                                "Would you like to {} {}? (Y/n)",
-                                "clean".red(),
-                                dir_name.bright_green()
-                            );
+                            message = message + &format!(" {}", dir_path_str.bright_green() ).to_string()
                         }
+
+                        println!("{}", message);
 
                         let mut input = String::new();
                         stdin().read_line(&mut input).unwrap();
@@ -247,37 +225,21 @@ pub fn projects_to_clean(dir: &str) -> Vec<String> {
                     } else {
                         dir_vec.push(dir_path_str.to_string());
 
-                        if args.verbosity >= 2 {
-                            let size = get_directory_size(dir_path.to_str().unwrap());
-                            println!(
-                                "[{}]: {} (~{}) ({})",
-                                "-".red(),
-                                dir_name.bright_green(),
-                                size.format_size(),
-                                dir_path_str.bright_green()
-                            );
-                        } else if args.verbosity >= 1 {
-                            println!(
-                                "[{}]: {} ({})",
-                                "-".red(),
-                                dir_name.bright_green(),
-                                dir_path_str.bright_green(),
-                            );
-                        } else if args.show_size {
-                            let size = get_directory_size(dir_path.to_str().unwrap());
-                            println!(
-                                "[{}]: {} (~{})",
-                                "-".red(),
-                                dir_name.bright_green(),
-                                size.format_size(),
-                            );
-                        } else {
-                            println!(
-                                "[{}]: {}",
+                        let mut message = 
+                            format!("[{}]: {}",
                                 "-".red(),
                                 dir_name.bright_green(),
                             );
+
+                        if args.show_size {
+                            let size = get_directory_size(dir_path.to_str().unwrap()).format_size();
+                            message = message + &format!(" (~{})", size).to_string()
                         }
+                        if args.verbosity >= 1 {
+                            message = message + &format!(" ({})", dir_path_str.bright_green()).to_string()
+                        }
+
+                        println!("{}", message)
                     }
                 }
             }
