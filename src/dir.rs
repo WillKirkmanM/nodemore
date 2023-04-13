@@ -138,7 +138,7 @@ pub fn delete_node_modules(dir: &str, value: u32) {
     match fs::remove_dir_all(&node_modules_path) {
         Ok(_) => {
             let mut message = 
-                format!("[{}]:({}) {} {}!",
+                format!("[{}]: ({}) {} {}!",
                         "-".red(),
                         value.to_string().bright_green(),
                         "Cleaned".bright_green(),
@@ -147,11 +147,11 @@ pub fn delete_node_modules(dir: &str, value: u32) {
 
             if args.show_size {
                 let dir_size = get_directory_size(dir).format_size();
-                message = message + &format!(" (~{})", dir_size).to_string()
+                message = message + " " + &format!("(~{})", dir_size).to_string()
             }
 
             if args.verbosity >= 1  {
-                message = message + &format!(" ({})", dir).to_string()
+                message = message + " " + &format!("({})", dir).to_string()
             }
             
             println!("{}", message)
@@ -165,7 +165,7 @@ pub fn delete_node_modules(dir: &str, value: u32) {
                     );
 
             if args.verbosity >= 1 {
-                message = message + &format!(" ({})", dir).to_owned()
+                message = message + " " + &format!("({})", dir).to_owned()
             }
 
             message = message + &format!("\n{}", err).to_string();
@@ -208,7 +208,7 @@ pub fn projects_to_clean(dir: &str) -> Vec<String> {
                             );
 
                         if args.verbosity >= 1 {
-                            message = message + &format!(" {}", dir_path_str.bright_green() ).to_string()
+                            message = message + " " + &format!(" {}", dir_path_str.bright_green() ).to_string()
                         }
 
                         println!("{}", message);
@@ -233,10 +233,10 @@ pub fn projects_to_clean(dir: &str) -> Vec<String> {
 
                         if args.show_size {
                             let size = get_directory_size(dir_path.to_str().unwrap()).format_size();
-                            message = message + &format!(" (~{})", size).to_string()
+                            message = message + " " + &format!("(~{})", size).to_string()
                         }
                         if args.verbosity >= 1 {
-                            message = message + &format!(" ({})", dir_path_str.bright_green()).to_string()
+                            message = message + " " + &format!("({})", dir_path_str.bright_green()).to_string()
                         }
 
                         println!("{}", message)
