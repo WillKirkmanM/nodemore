@@ -25,7 +25,6 @@ pub fn init() {
     }
         
     println!("NodeJS Projects Not Accessed in the last {}:", cleaning_time.bright_green());
-    
     ask_to_clean(list);
 }
 
@@ -157,7 +156,7 @@ pub fn delete_node_modules(dir: &str, value: u32) {
             }
 
             if args.verbosity >= 1  {
-                message = message + " " + &format!("({})", dir).to_string()
+                message = message + " " + &format!("({})", dir.bright_green()).to_string()
             }
             
             println!("{}", message)
@@ -171,7 +170,7 @@ pub fn delete_node_modules(dir: &str, value: u32) {
                     );
 
             if args.verbosity >= 1 {
-                message = message + " " + &format!("({})", dir).to_owned()
+                message = message + " " + &format!("({})", dir.bright_green()).to_owned()
             }
 
             message = message + &format!("\n{}", err).to_string();
