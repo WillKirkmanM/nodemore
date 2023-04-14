@@ -11,11 +11,13 @@ Contents
 
 Why?
 ========
+<p align="center">
   <img 
   src="https://i.redd.it/tfugj4n3l6ez.png"
   width=330
   height=237
    />
+</p>
 
 NodeJS has a **horrible** way of dealing with dependencies. One that intentionally aims to strip you of any functionality other than programming in Javascript. I found myself trying to install a small 100GB game only to find that I couldn't due to half of my 1TB hard disk being taken over by `node_modules` (That was a horror game in itself).
 
