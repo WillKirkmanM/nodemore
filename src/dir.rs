@@ -55,7 +55,14 @@ impl FormatSize for u64 {
 }
 
 pub fn contains_only_folders(dir: &str) -> bool {
-    let contents = fs::read_dir(dir).unwrap();
+    let contents;
+    match fs::read_dir(dir) {
+        Ok(content) => contents = content,
+        Err(_) => {
+            println!("Hey! It looks like you're in a folder that we can't access❕Try going into a different folder.");
+            exit(1)
+        }
+    };
 
     for file in contents {
         let file = file.unwrap();
