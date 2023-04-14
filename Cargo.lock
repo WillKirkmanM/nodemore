@@ -258,7 +258,7 @@ checksum = "d59d8c75012853d2e872fb56bc8a2e53718e2cafe1a4c823143141c6d90c322f"
 
 [[package]]
 name = "nodemore"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "clap",
  "colored",
