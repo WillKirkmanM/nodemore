@@ -1,5 +1,7 @@
 # nodemore
-💾 Saving Your Hard Disk, One Project at a Time
+💾 Nodemore Recursively Searches Directories for Unused Projects
+
+![NODEMORE](https://user-images.githubusercontent.com/98240335/232202453-078ba9ef-081e-4ff5-b576-eb27c3230102.png)
 
 Contents
 ========
