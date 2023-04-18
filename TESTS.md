@@ -1,6 +1,8 @@
 # Nodemore Test Completion Status
 
-<img style="float: right;" src="https://rustacean.net/assets/cuddlyferris.png">
+<p align="center">
+  <img src="https://rustacean.net/assets/cuddlyferris.png">
+</p>
 
 Below is a rubric for the different states a test can be in. Below that is the table with all functions and their respective test statuses:
 
