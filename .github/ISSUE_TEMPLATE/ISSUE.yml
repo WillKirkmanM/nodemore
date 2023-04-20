@@ -1,0 +1,72 @@
+name: "❗Issue"
+description: "Choose this to Request a New Feature"
+title: "❗[ISSUE] - <title>"
+labels: [
+  "bug" 
+]
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter an explicit description of your issue
+      placeholder: Short and explicit description of your incident...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reprod
+    attributes:
+      label: "Prerequisites"
+      description: If Applicable, Please Provide any Prerequisites We Might Need
+      placeholder: ex. Compile with Rust Nightly
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: reprod
+    attributes:
+      label: "Reproduction steps"
+      description: Please Enter an Explicit Description of your Issue
+      value: |
+        1. Run this Command 
+        2. Must have '...'
+        4. See error
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: "Screenshots"
+      description: If Applicable, add Screenshots to Help Explain the Error.
+      value: |
+        ![DESCRIPTION](LINK.png)
+      render: bash
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs"
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: bash
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: "OS"
+      description: What is the impacted environment ?
+      multiple: true
+      options:
+        - Windows
+        - Linux
+        - Mac
+    validations:
+      required: true
