@@ -16,7 +16,7 @@ body:
       required: true
 
   - type: textarea
-    id: reprod
+    id: prerequisites
     attributes:
       label: "Prerequisites"
       description: If Applicable, Please Provide any Prerequisites We Might Need
@@ -26,7 +26,7 @@ body:
       required: true
 
   - type: textarea
-    id: reprod
+    id: reproduction
     attributes:
       label: "Reproduction steps"
       description: Please Enter an Explicit Description of your Issue
