@@ -2,7 +2,7 @@ name: "💡 Feature Request"
 description: "Choose this to Request a New Feature"
 title: "💡 [FEATURE] - <title>"
 labels: [
-  "question"
+  "enhancement"
 ]
 
 body:
